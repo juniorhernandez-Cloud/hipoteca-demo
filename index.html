@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hipoteca Demo — Práctica escolar</title>
+<style>
+  :root{
+    --prim:#0d9488; --prim2:#0f766e; --prim-d:#134e4a; --tint:#e6f6f4;
+    --acento:#f59e0b; --verde:#16a34a; --rojo:#dc2626; --amar:#b58900;
+    --bg:#f1f5f9; --card:#fff; --txt:#0f2733; --suave:#64748b; --borde:#dbe3ea;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,"Segoe UI",Arial,sans-serif; background:var(--bg); color:var(--txt); }
+  .aviso{ background:#fff3cd; color:#7a5d00; text-align:center; padding:7px 14px; font-size:.84rem; border-bottom:1px solid #f0e3a8; }
+  header{ background:var(--prim-d); color:#fff; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand .dots{ display:flex; gap:4px; } .brand .dots i{ width:9px; height:9px; border-radius:50%; background:var(--acento); display:block; }
+  .brand .dots i:last-child{ background:#5eead4; }
+  .brand b{ font-size:1.3rem; letter-spacing:.3px; } .brand b span{ font-weight:400; opacity:.85; }
+  nav{ display:flex; gap:8px; }
+  nav a{ color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:.9rem; font-weight:600; border:1px solid rgba(255,255,255,.35); }
+  nav a.activo{ background:#fff; color:var(--prim-d); }
+  main{ max-width:1080px; margin:26px auto; padding:0 18px; }
+
+  /* ----- Simulador dos columnas ----- */
+  .dos{ display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:stretch; }
+  .panel{ background:var(--card); border-radius:16px; padding:28px; box-shadow:0 4px 18px rgba(15,39,51,.07); }
+  .panel h2{ text-align:center; margin:0 0 18px; color:var(--prim-d); font-size:1.4rem; }
+  .tyc{ width:100%; background:var(--bg); border:1px solid var(--borde); color:var(--suave); border-radius:8px;
+    padding:11px; font-size:.86rem; text-align:center; cursor:default; margin-bottom:18px; }
+  .lbl{ font-weight:700; font-size:.95rem; margin:16px 0 8px; }
+  .seg{ display:flex; background:var(--bg); border-radius:10px; padding:4px; gap:4px; }
+  .seg button{ flex:1; border:0; background:none; padding:9px 6px; border-radius:7px; font-size:.86rem; font-weight:600;
+    color:var(--suave); cursor:pointer; }
+  .seg button.on{ background:var(--prim); color:#fff; }
+  .inp{ width:100%; padding:13px 14px; border:1px solid var(--borde); border-radius:9px; font-size:1.05rem; text-align:center; font-weight:600; }
+  .nota{ color:var(--suave); font-size:.78rem; margin:6px 2px 0; }
+  input[type=range]{ width:100%; accent-color:var(--prim); margin-top:10px; }
+  .fila{ display:flex; gap:10px; } .fila .inp{ text-align:center; }
+  .fila .pct{ max-width:120px; }
+  .simular{ width:100%; margin-top:22px; background:var(--prim); color:#fff; border:0; border-radius:999px;
+    padding:14px; font-size:1.05rem; font-weight:800; cursor:pointer; }
+  .simular:hover{ background:var(--prim2); }
+
+  /* ----- Panel derecho ----- */
+  .rpanel{ display:flex; flex-direction:column; }
+  .rvacio{ margin:auto; text-align:center; max-width:340px; }
+  .rvacio .ic{ display:flex; justify-content:center; gap:20px; margin-bottom:18px; color:var(--prim); }
+  .rvacio .ic svg{ width:40px; height:40px; }
+  .rvacio h3{ color:var(--prim-d); font-size:1.3rem; margin:0 0 10px; }
+  .rvacio p{ color:var(--suave); margin:0; }
+  .rtop{ background:linear-gradient(120deg,var(--prim-d),var(--prim)); color:#fff; border-radius:12px; padding:20px; text-align:center; }
+  .rtop span{ opacity:.85; font-size:.9rem; } .rtop .big{ font-size:2rem; font-weight:800; margin:4px 0; }
+  .rrow{ display:flex; justify-content:space-between; padding:11px 2px; border-bottom:1px solid #eef2f5; font-size:.95rem; }
+  .rrow:last-of-type{ border:0; } .rrow b{ color:var(--prim-d); }
+  .envio{ margin-top:14px; border-top:1px dashed var(--borde); padding-top:14px; }
+  .envio .campo{ margin-bottom:10px; } .envio label{ font-weight:600; font-size:.85rem; display:block; margin-bottom:4px; }
+  .envio input{ width:100%; padding:10px; border:1px solid var(--borde); border-radius:8px; font-size:.95rem; }
+  .enviar{ width:100%; background:var(--acento); color:#3a2c00; border:0; border-radius:9px; padding:12px; font-weight:800; cursor:pointer; margin-top:4px; }
+  .ok{ background:#e6f6f0; border:1px solid var(--verde); color:#14532d; padding:14px; border-radius:10px; margin-top:12px; font-size:.92rem; }
+  .ok b{ display:block; margin-bottom:3px; }
+
+  /* ----- Admin ----- */
+  h1{ font-size:1.5rem; margin:0 0 4px; } .sub{ color:var(--suave); margin:0 0 20px; }
+  .card{ background:#fff; border:1px solid var(--borde); border-radius:14px; padding:22px; }
+  .login{ max-width:380px; margin:0 auto; }
+  .campoL{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+  .campoL label{ font-weight:600; font-size:.9rem; } .campoL input{ padding:10px; border:1px solid var(--borde); border-radius:8px; font-size:1rem; }
+  .btnp{ background:var(--prim); color:#fff; border:0; border-radius:9px; padding:11px 18px; font-weight:800; cursor:pointer; }
+  .sec{ background:#e7edf1; color:var(--prim-d); } .mini{ padding:6px 10px; font-size:.82rem; border-radius:7px; }
+  .cred{ background:var(--bg); border-radius:8px; padding:10px 12px; font-size:.84rem; color:var(--suave); margin-top:14px; }
+  .barra{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .stats{ display:flex; gap:10px; flex-wrap:wrap; } .stat{ background:#fff; border:1px solid var(--borde); border-radius:10px; padding:8px 14px; font-size:.85rem; }
+  .stat b{ display:block; font-size:1.3rem; color:var(--prim-d); }
+  table{ width:100%; border-collapse:collapse; font-size:.9rem; } th,td{ padding:10px 8px; border-bottom:1px solid var(--borde); text-align:left; vertical-align:top; }
+  th{ background:var(--bg); color:var(--suave); font-weight:600; font-size:.82rem; }
+  .pill{ display:inline-block; padding:2px 10px; border-radius:999px; font-size:.76rem; color:#fff; white-space:nowrap; }
+  .p-rev{ background:var(--amar); } .p-apr{ background:var(--verde); } .p-rec{ background:var(--rojo); }
+  .acciones{ display:flex; gap:6px; flex-wrap:wrap; } .vacio{ color:var(--suave); padding:20px 0; text-align:center; }
+  footer{ text-align:center; color:var(--suave); font-size:.8rem; padding:24px; }
+  @media (max-width:760px){ .dos{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="aviso">⚠️ Práctica escolar · Marca y servicio ficticios · Usa solo datos de prueba · La información se guarda solo en este navegador.</div>
+
+<header>
+  <div class="brand">
+    <span class="dots"><i></i><i></i></span>
+    <b>Hipoteca<span>Demo</span></b>
+  </div>
+  <nav>
+    <a href="#solicitud" id="nav-sol">Simular</a>
+    <a href="#admin" id="nav-adm">Administrador</a>
+  </nav>
+</header>
+
+<main id="vista"></main>
+<footer>Hipoteca Demo — ejercicio académico. No es una institución real y no otorga créditos.</footer>
+
+<script>
+const LLAVE="hipotecademo_solicitudes", ADMIN_USER="admin", ADMIN_PASS="demo1234";
+function leer(){ try{ return JSON.parse(localStorage.getItem(LLAVE))||[]; }catch(e){ return []; } }
+function guardar(a){ try{ localStorage.setItem(LLAVE, JSON.stringify(a)); }catch(e){} }
+let adminEntro=false, ultimaSim=null;
+
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const dinero=n=>(+n||0).toLocaleString("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0});
+const dinero2=n=>(+n||0).toLocaleString("es-MX",{style:"currency",currency:"MXN"});
+const esc=v=>{ const d=document.createElement("div"); d.textContent=v??""; return d.innerHTML; };
+const pillClase=e=>e==="Aprobada"?"p-apr":e==="Rechazada"?"p-rec":"p-rev";
+const pagoMensual=(m,t,n)=>{ const r=t/100/12; return r===0?m/n:m*r/(1-Math.pow(1+r,-n)); };
+
+// ================== Portal del solicitante (estilo simulador) ==================
+function vistaSolicitud(){
+  $("#vista").innerHTML=`
+  <div class="dos">
+    <div class="panel">
+      <h2>Simula tu crédito</h2>
+      <div class="tyc">Consultar términos y condiciones del producto</div>
+
+      <div class="lbl">Tipo de crédito</div>
+      <div class="seg" id="seg-tipo">
+        <button class="on" data-v="Tradicional">Tradicional</button>
+        <button data-v="Apoyo Infonavit">Apoyo Infonavit</button>
+        <button data-v="Cofinavit">Cofinavit</button>
+      </div>
+
+      <div class="lbl">¿Cuánto vale el inmueble?</div>
+      <input class="inp" id="valor" value="3,000,000" inputmode="numeric">
+      <div class="nota">Mín. $500,000</div>
+
+      <div class="lbl">Monto del crédito</div>
+      <input class="inp" id="monto" value="2,700,000" inputmode="numeric">
+      <input type="range" id="montoR" min="0" max="2700000" value="2700000" step="10000">
+      <div class="nota" id="maxNota"></div>
+
+      <div class="lbl">¿Cuánto es el enganche?</div>
+      <div class="fila">
+        <input class="inp" id="enganche" value="300,000" inputmode="numeric">
+        <input class="inp pct" id="engPct" value="10" inputmode="numeric">
+      </div>
+
+      <div class="lbl">Plazo</div>
+      <div class="seg" id="seg-plazo">
+        <button data-v="10">10 años</button>
+        <button class="on" data-v="15">15 años</button>
+        <button data-v="20">20 años</button>
+      </div>
+
+      <button class="simular" id="btnSim">Simular</button>
+    </div>
+
+    <div class="panel rpanel" id="rpanel">
+      <div class="rvacio">
+        <div class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13c3-2 6-2 9 0s6 2 7 0"/><circle cx="17" cy="7" r="2"/></svg>
+        </div>
+        <h3>Simulador de Crédito Hipotecario: Prepárate en 5 minutos</h3>
+        <p>Conoce un estimado de tu pago mensual y envía tu solicitud para revisión (demostración).</p>
+      </div>
+    </div>
+  </div>`;
+
+  const num = el => +String(el.value).replace(/[^\d]/g,"") || 0;
+  const fmt = n => n.toLocaleString("es-MX");
+
+  function syncMax(){
+    const valor=num($("#valor")); const max=Math.round(valor*0.9);
+    $("#montoR").max=max; if(num($("#monto"))>max){ $("#monto").value=fmt(max); }
+    $("#montoR").value=num($("#monto"));
+    $("#maxNota").textContent=`Máx. ${dinero(max)} (90% del inmueble)`;
+  }
+  function syncEnganche(){
+    const valor=num($("#valor")); const eng=num($("#enganche"));
+    $("#engPct").value = valor? Math.round(eng/valor*100) : 0;
+  }
+  $("#valor").addEventListener("input",()=>{ $("#valor").value=fmt(num($("#valor"))); syncMax(); syncEnganche(); });
+  $("#monto").addEventListener("input",()=>{ $("#monto").value=fmt(num($("#monto"))); $("#montoR").value=num($("#monto")); });
+  $("#montoR").addEventListener("input",()=>{ $("#monto").value=fmt(+$("#montoR").value); });
+  $("#enganche").addEventListener("input",()=>{ $("#enganche").value=fmt(num($("#enganche"))); syncEnganche(); });
+  $("#engPct").addEventListener("input",()=>{ const v=num($("#valor")); $("#enganche").value=fmt(Math.round(v*(num($("#engPct"))/100))); });
+  $$("#seg-tipo button, #seg-plazo button").forEach(b=> b.onclick=()=>{ $$("button",b.parentElement).forEach(x=>x.classList.remove("on")); b.classList.add("on"); });
+  syncMax(); syncEnganche();
+
+  $("#btnSim").onclick = () => {
+    const valor=num($("#valor")), monto=num($("#monto")), eng=num($("#enganche"));
+    const tipo=$("#seg-tipo .on").dataset.v;
+    const plazo=+$("#seg-plazo .on").dataset.v;
+    const tasa = tipo==="Tradicional"?11.5 : tipo==="Apoyo Infonavit"?10.8 : 12.2;
+    const mensual=pagoMensual(monto, tasa, plazo;12);
+    const total=mensual*plazo*12;
+    ultimaSim={ tipo, valor, monto, enganche:eng, plazo, tasa, mensual:Math.round(mensual*100)/100 };
+    $("#rpanel").innerHTML=`
+      <div class="rtop"><span>Pago mensual estimado</span><div class="big">${dinero2(mensual)}</div><span>${tipo} · ${plazo} años · tasa ${tasa}%</span></div>
+      <div style="margin-top:14px">
+        <div class="rrow"><span>Valor del inmueble</span><b>${dinero(valor)}</b></div>
+        <div class="rrow"><span>Monto del crédito</span><b>${dinero(monto)}</b></div>
+        <div class="rrow"><span>Enganche</span><b>${dinero(eng)}</b></div>
+        <div class="rrow"><span>Total a pagar (estimado)</span><b>${dinero(total)}</b></div>
+      </div>
+      <div class="envio">
+        <div class="campo"><label>Nombre del solicitante (ficticio)</label><input id="s_nombre" placeholder="Ej. Juan Demo Pérez"></div>
+        <div class="campo"><label>Correo de contacto (de prueba)</label><input id="s_correo" type="email" placeholder="prueba@ejemplo.test"></div>
+        <button class="enviar" id="btnEnviar">Enviar solicitud para revisión</button>
+        <div id="envOk"></div>
+      </div>`;
+    $("#btnEnviar").onclick = enviarSolicitud;
+  };
+}
+
+function enviarSolicitud(){
+  const nombre=$("#s_nombre").value.trim(), correo=$("#s_correo").value.trim();
+  if(!nombre || !correo){ $("#envOk").innerHTML=`<div class="ok" style="background:#fdecec;border-color:#dc2626;color:#7a1c1c">Completa nombre y correo de prueba.</div>`; return; }
+  const arr=leer(); const folio="SOL-"+String(arr.length+1).padStart(4,"0");
+  arr.push({ folio, nombre, correo, ...ultimaSim, estatus:"En revisión", fecha:new Date().toLocaleString("es-MX") });
+  guardar(arr);
+  $("#envOk").innerHTML=`<div class="ok"><b>✅ Solicitud ${esc(folio)} registrada</b>Estado: <strong>En revisión</strong>. En esta demostración, el administrador la revisará desde su panel y cambiará el estado. No se envía ningún correo ni se comparte la información.</div>`;
+  $("#btnEnviar").disabled=true;
+}
+
+// ================== Portal del administrador ==================
+function vistaAdmin(){
+  if(!adminEntro){ vistaLogin(); return; }
+  const arr=leer(); const n=e=>arr.filter(s=>s.estatus===e).length;
+  $("#vista").innerHTML=`
+    <div class="barra">
+      <div><h1 style="margin:0">Panel del administrador</h1><p class="sub" style="margin:2px 0 0">Solicitudes recibidas en esta demostración.</p></div>
+      <div class="acciones"><button class="btnp sec mini" id="salir">Cerrar sesión</button><button class="btnp sec mini" id="limpiar">Borrar todo</button></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${arr.length}</b>Total</div><div class="stat"><b>${n("En revisión")}</b>En revisión</div>
+      <div class="stat"><b>${n("Aprobada")}</b>Aprobadas</div><div class="stat"><b>${n("Rechazada")}</b>Rechazadas</div>
+    </div>
+    <div class="card" style="margin-top:16px; overflow:auto">
+      ${arr.length===0?`<p class="vacio">Aún no hay solicitudes. Ve a "Simular", haz una simulación y envíala.</p>`:`
+      <table><thead><tr><th>Folio</th><th>Solicitante</th><th>Contacto</th><th>Crédito</th><th>Pago mensual</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody>${arr.map((s,i)=>`
+        <tr>
+          <td>${esc(s.folio)}<br><span style="color:var(--suave);font-size:.78rem">${esc(s.fecha)}</span></td>
+          <td>${esc(s.nombre)}</td><td>${esc(s.correo)}</td>
+          <td>${dinero(s.monto)}<br><span style="color:var(--suave);font-size:.78rem">${esc(s.tipo)} · ${s.plazo} años</span></td>
+          <td>${dinero2(s.mensual)}</td>
+          <td><span class="pill ${pillClase(s.estatus)}">${esc(s.estatus)}</span></td>
+          <td class="acciones"><button class="btnp mini" data-apr="${i}">Aprobar</button><button class="btnp sec mini" data-rec="${i}">Rechazar</button></td>
+        </tr>`).join("")}</tbody></table>`}
+    </div>`;
+  $("#salir").onclick=()=>{ adminEntro=false; vistaAdmin(); };
+  $("#limpiar").onclick=()=>{ if(confirm("¿Borrar todas las solicitudes de la demo?")){ guardar([]); vistaAdmin(); } };
+  $$("[data-apr]").forEach(b=>b.onclick=()=>cambiar(+b.dataset.apr,"Aprobada"));
+  $$("[data-rec]").forEach(b=>b.onclick=()=>cambiar(+b.dataset.rec,"Rechazada"));
+}
+function cambiar(i,e){ const a=leer(); if(a[i]){ a[i].estatus=e; guardar(a); } vistaAdmin(); }
+
+function vistaLogin(){
+  $("#vista").innerHTML=`
+    <h1>Acceso de administrador</h1><p class="sub">Inicia sesión para ver las solicitudes de la demostración.</p>
+    <div class="card login"><form id="flogin">
+      <div class="campoL"><label>Usuario</label><input id="l_user" autocomplete="off" placeholder="admin"></div>
+      <div class="campoL"><label>Contraseña</label><input id="l_pass" type="password" placeholder="••••••"></div>
+      <button class="btnp" type="submit">Entrar</button>
+      <div id="lerr" style="color:var(--rojo);margin-top:10px;font-size:.9rem"></div>
+      <div class="cred">🔑 Credenciales de demostración — Usuario: <b>admin</b> · Contraseña: <b>demo1234</b></div>
+    </form></div>`;
+  $("#flogin").addEventListener("submit",e=>{ e.preventDefault();
+    if($("#l_user").value.trim()===ADMIN_USER && $("#l_pass").value===ADMIN_PASS){ adminEntro=true; vistaAdmin(); }
+    else $("#lerr").textContent="Usuario o contraseña incorrectos."; });
+}
+
+function render(){
+  const ruta=location.hash==="#admin"?"admin":"solicitud";
+  $("#nav-sol").classList.toggle("activo",ruta==="solicitud");
+  $("#nav-adm").classList.toggle("activo",ruta==="admin");
+  ruta==="admin"?vistaAdmin():vistaSolicitud();
+}
+window.addEventListener("hashchange",render);
+render();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hipoteca Demo — Práctica escolar</title>
+<style>
+  :root{
+    --prim:#0d9488; --prim2:#0f766e; --prim-d:#134e4a; --tint:#e6f6f4;
+    --acento:#f59e0b; --verde:#16a34a; --rojo:#dc2626; --amar:#b58900;
+    --bg:#f1f5f9; --card:#fff; --txt:#0f2733; --suave:#64748b; --borde:#dbe3ea;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,"Segoe UI",Arial,sans-serif; background:var(--bg); color:var(--txt); }
+  .aviso{ background:#fff3cd; color:#7a5d00; text-align:center; padding:7px 14px; font-size:.84rem; border-bottom:1px solid #f0e3a8; }
+  header{ background:var(--prim-d); color:#fff; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand .dots{ display:flex; gap:4px; } .brand .dots i{ width:9px; height:9px; border-radius:50%; background:var(--acento); display:block; }
+  .brand .dots i:last-child{ background:#5eead4; }
+  .brand b{ font-size:1.3rem; letter-spacing:.3px; } .brand b span{ font-weight:400; opacity:.85; }
+  nav{ display:flex; gap:8px; }
+  nav a{ color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:.9rem; font-weight:600; border:1px solid rgba(255,255,255,.35); }
+  nav a.activo{ background:#fff; color:var(--prim-d); }
+  main{ max-width:1080px; margin:26px auto; padding:0 18px; }
+
+  /* ----- Simulador dos columnas ----- */
+  .dos{ display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:stretch; }
+  .panel{ background:var(--card); border-radius:16px; padding:28px; box-shadow:0 4px 18px rgba(15,39,51,.07); }
+  .panel h2{ text-align:center; margin:0 0 18px; color:var(--prim-d); font-size:1.4rem; }
+  .tyc{ width:100%; background:var(--bg); border:1px solid var(--borde); color:var(--suave); border-radius:8px;
+    padding:11px; font-size:.86rem; text-align:center; cursor:default; margin-bottom:18px; }
+  .lbl{ font-weight:700; font-size:.95rem; margin:16px 0 8px; }
+  .seg{ display:flex; background:var(--bg); border-radius:10px; padding:4px; gap:4px; }
+  .seg button{ flex:1; border:0; background:none; padding:9px 6px; border-radius:7px; font-size:.86rem; font-weight:600;
+    color:var(--suave); cursor:pointer; }
+  .seg button.on{ background:var(--prim); color:#fff; }
+  .inp{ width:100%; padding:13px 14px; border:1px solid var(--borde); border-radius:9px; font-size:1.05rem; text-align:center; font-weight:600; }
+  .nota{ color:var(--suave); font-size:.78rem; margin:6px 2px 0; }
+  input[type=range]{ width:100%; accent-color:var(--prim); margin-top:10px; }
+  .fila{ display:flex; gap:10px; } .fila .inp{ text-align:center; }
+  .fila .pct{ max-width:120px; }
+  .simular{ width:100%; margin-top:22px; background:var(--prim); color:#fff; border:0; border-radius:999px;
+    padding:14px; font-size:1.05rem; font-weight:800; cursor:pointer; }
+  .simular:hover{ background:var(--prim2); }
+
+  /* ----- Panel derecho ----- */
+  .rpanel{ display:flex; flex-direction:column; }
+  .rvacio{ margin:auto; text-align:center; max-width:340px; }
+  .rvacio .ic{ display:flex; justify-content:center; gap:20px; margin-bottom:18px; color:var(--prim); }
+  .rvacio .ic svg{ width:40px; height:40px; }
+  .rvacio h3{ color:var(--prim-d); font-size:1.3rem; margin:0 0 10px; }
+  .rvacio p{ color:var(--suave); margin:0; }
+  .rtop{ background:linear-gradient(120deg,var(--prim-d),var(--prim)); color:#fff; border-radius:12px; padding:20px; text-align:center; }
+  .rtop span{ opacity:.85; font-size:.9rem; } .rtop .big{ font-size:2rem; font-weight:800; margin:4px 0; }
+  .rrow{ display:flex; justify-content:space-between; padding:11px 2px; border-bottom:1px solid #eef2f5; font-size:.95rem; }
+  .rrow:last-of-type{ border:0; } .rrow b{ color:var(--prim-d); }
+  .envio{ margin-top:14px; border-top:1px dashed var(--borde); padding-top:14px; }
+  .envio .campo{ margin-bottom:10px; } .envio label{ font-weight:600; font-size:.85rem; display:block; margin-bottom:4px; }
+  .envio input{ width:100%; padding:10px; border:1px solid var(--borde); border-radius:8px; font-size:.95rem; }
+  .enviar{ width:100%; background:var(--acento); color:#3a2c00; border:0; border-radius:9px; padding:12px; font-weight:800; cursor:pointer; margin-top:4px; }
+  .ok{ background:#e6f6f0; border:1px solid var(--verde); color:#14532d; padding:14px; border-radius:10px; margin-top:12px; font-size:.92rem; }
+  .ok b{ display:block; margin-bottom:3px; }
+
+  /* ----- Admin ----- */
+  h1{ font-size:1.5rem; margin:0 0 4px; } .sub{ color:var(--suave); margin:0 0 20px; }
+  .card{ background:#fff; border:1px solid var(--borde); border-radius:14px; padding:22px; }
+  .login{ max-width:380px; margin:0 auto; }
+  .campoL{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+  .campoL label{ font-weight:600; font-size:.9rem; } .campoL input{ padding:10px; border:1px solid var(--borde); border-radius:8px; font-size:1rem; }
+  .btnp{ background:var(--prim); color:#fff; border:0; border-radius:9px; padding:11px 18px; font-weight:800; cursor:pointer; }
+  .sec{ background:#e7edf1; color:var(--prim-d); } .mini{ padding:6px 10px; font-size:.82rem; border-radius:7px; }
+  .cred{ background:var(--bg); border-radius:8px; padding:10px 12px; font-size:.84rem; color:var(--suave); margin-top:14px; }
+  .barra{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .stats{ display:flex; gap:10px; flex-wrap:wrap; } .stat{ background:#fff; border:1px solid var(--borde); border-radius:10px; padding:8px 14px; font-size:.85rem; }
+  .stat b{ display:block; font-size:1.3rem; color:var(--prim-d); }
+  table{ width:100%; border-collapse:collapse; font-size:.9rem; } th,td{ padding:10px 8px; border-bottom:1px solid var(--borde); text-align:left; vertical-align:top; }
+  th{ background:var(--bg); color:var(--suave); font-weight:600; font-size:.82rem; }
+  .pill{ display:inline-block; padding:2px 10px; border-radius:999px; font-size:.76rem; color:#fff; white-space:nowrap; }
+  .p-rev{ background:var(--amar); } .p-apr{ background:var(--verde); } .p-rec{ background:var(--rojo); }
+  .acciones{ display:flex; gap:6px; flex-wrap:wrap; } .vacio{ color:var(--suave); padding:20px 0; text-align:center; }
+  footer{ text-align:center; color:var(--suave); font-size:.8rem; padding:24px; }
+  @media (max-width:760px){ .dos{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="aviso">⚠️ Práctica escolar · Marca y servicio ficticios · Usa solo datos de prueba · La información se guarda solo en este navegador.</div>
+
+<header>
+  <div class="brand">
+    <span class="dots"><i></i><i></i></span>
+    <b>Hipoteca<span>Demo</span></b>
+  </div>
+  <nav>
+    <a href="#solicitud" id="nav-sol">Simular</a>
+    <a href="#admin" id="nav-adm">Administrador</a>
+  </nav>
+</header>
+
+<main id="vista"></main>
+<footer>Hipoteca Demo — ejercicio académico. No es una institución real y no otorga créditos.</footer>
+
+<script>
+const LLAVE="hipotecademo_solicitudes", ADMIN_USER="admin", ADMIN_PASS="demo1234";
+function leer(){ try{ return JSON.parse(localStorage.getItem(LLAVE))||[]; }catch(e){ return []; } }
+function guardar(a){ try{ localStorage.setItem(LLAVE, JSON.stringify(a)); }catch(e){} }
+let adminEntro=false, ultimaSim=null;
+
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const dinero=n=>(+n||0).toLocaleString("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0});
+const dinero2=n=>(+n||0).toLocaleString("es-MX",{style:"currency",currency:"MXN"});
+const esc=v=>{ const d=document.createElement("div"); d.textContent=v??""; return d.innerHTML; };
+const pillClase=e=>e==="Aprobada"?"p-apr":e==="Rechazada"?"p-rec":"p-rev";
+const pagoMensual=(m,t,n)=>{ const r=t/100/12; return r===0?m/n:m*r/(1-Math.pow(1+r,-n)); };
+
+// ================== Portal del solicitante (estilo simulador) ==================
+function vistaSolicitud(){
+  $("#vista").innerHTML=`
+  <div class="dos">
+    <div class="panel">
+      <h2>Simula tu crédito</h2>
+      <div class="tyc">Consultar términos y condiciones del producto</div>
+
+      <div class="lbl">Tipo de crédito</div>
+      <div class="seg" id="seg-tipo">
+        <button class="on" data-v="Tradicional">Tradicional</button>
+        <button data-v="Apoyo Infonavit">Apoyo Infonavit</button>
+        <button data-v="Cofinavit">Cofinavit</button>
+      </div>
+
+      <div class="lbl">¿Cuánto vale el inmueble?</div>
+      <input class="inp" id="valor" value="3,000,000" inputmode="numeric">
+      <div class="nota">Mín. $500,000</div>
+
+      <div class="lbl">Monto del crédito</div>
+      <input class="inp" id="monto" value="2,700,000" inputmode="numeric">
+      <input type="range" id="montoR" min="0" max="2700000" value="2700000" step="10000">
+      <div class="nota" id="maxNota"></div>
+
+      <div class="lbl">¿Cuánto es el enganche?</div>
+      <div class="fila">
+        <input class="inp" id="enganche" value="300,000" inputmode="numeric">
+        <input class="inp pct" id="engPct" value="10" inputmode="numeric">
+      </div>
+
+      <div class="lbl">Plazo</div>
+      <div class="seg" id="seg-plazo">
+        <button data-v="10">10 años</button>
+        <button class="on" data-v="15">15 años</button>
+        <button data-v="20">20 años</button>
+      </div>
+
+      <button class="simular" id="btnSim">Simular</button>
+    </div>
+
+    <div class="panel rpanel" id="rpanel">
+      <div class="rvacio">
+        <div class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13c3-2 6-2 9 0s6 2 7 0"/><circle cx="17" cy="7" r="2"/></svg>
+        </div>
+        <h3>Simulador de Crédito Hipotecario: Prepárate en 5 minutos</h3>
+        <p>Conoce un estimado de tu pago mensual y envía tu solicitud para revisión (demostración).</p>
+      </div>
+    </div>
+  </div>`;
+
+  const num = el => +String(el.value).replace(/[^\d]/g,"") || 0;
+  const fmt = n => n.toLocaleString("es-MX");
+
+  function syncMax(){
+    const valor=num($("#valor")); const max=Math.round(valor*0.9);
+    $("#montoR").max=max; if(num($("#monto"))>max){ $("#monto").value=fmt(max); }
+    $("#montoR").value=num($("#monto"));
+    $("#maxNota").textContent=`Máx. ${dinero(max)} (90% del inmueble)`;
+  }
+  function syncEnganche(){
+    const valor=num($("#valor")); const eng=num($("#enganche"));
+    $("#engPct").value = valor? Math.round(eng/valor*100) : 0;
+  }
+  $("#valor").addEventListener("input",()=>{ $("#valor").value=fmt(num($("#valor"))); syncMax(); syncEnganche(); });
+  $("#monto").addEventListener("input",()=>{ $("#monto").value=fmt(num($("#monto"))); $("#montoR").value=num($("#monto")); });
+  $("#montoR").addEventListener("input",()=>{ $("#monto").value=fmt(+$("#montoR").value); });
+  $("#enganche").addEventListener("input",()=>{ $("#enganche").value=fmt(num($("#enganche"))); syncEnganche(); });
+  $("#engPct").addEventListener("input",()=>{ const v=num($("#valor")); $("#enganche").value=fmt(Math.round(v*(num($("#engPct"))/100))); });
+  $$("#seg-tipo button, #seg-plazo button").forEach(b=> b.onclick=()=>{ $$("button",b.parentElement).forEach(x=>x.classList.remove("on")); b.classList.add("on"); });
+  syncMax(); syncEnganche();
+
+  $("#btnSim").onclick = () => {
+    const valor=num($("#valor")), monto=num($("#monto")), eng=num($("#enganche"));
+    const tipo=$("#seg-tipo .on").dataset.v;
+    const plazo=+$("#seg-plazo .on").dataset.v;
+    const tasa = tipo==="Tradicional"?11.5 : tipo==="Apoyo Infonavit"?10.8 : 12.2;
+    const mensual=pagoMensual(monto, tasa, plazo*12);
+    const total=mensual*plazo*12;
+    ultimaSim={ tipo, valor, monto, enganche:eng, plazo, tasa, mensual:Math.round(mensual*100)/100 };
+    $("#rpanel").innerHTML=`
+      <div class="rtop"><span>Pago mensual estimado</span><div class="big">${dinero2(mensual)}</div><span>${tipo} · ${plazo} años · tasa ${tasa}%</span></div>
+      <div style="margin-top:14px">
+        <div class="rrow"><span>Valor del inmueble</span><b>${dinero(valor)}</b></div>
+        <div class="rrow"><span>Monto del crédito</span><b>${dinero(monto)}</b></div>
+        <div class="rrow"><span>Enganche</span><b>${dinero(eng)}</b></div>
+        <div class="rrow"><span>Total a pagar (estimado)</span><b>${dinero(total)}</b></div>
+      </div>
+      <div class="envio">
+        <div class="campo"><label>Nombre del solicitante (ficticio)</label><input id="s_nombre" placeholder="Ej. Juan Demo Pérez"></div>
+        <div class="campo"><label>Correo de contacto (de prueba)</label><input id="s_correo" type="email" placeholder="prueba@ejemplo.test"></div>
+        <button class="enviar" id="btnEnviar">Enviar solicitud para revisión</button>
+        <div id="envOk"></div>
+      </div>`;
+    $("#btnEnviar").onclick = enviarSolicitud;
+  };
+}
+
+function enviarSolicitud(){
+  const nombre=$("#s_nombre").value.trim(), correo=$("#s_correo").value.trim();
+  if(!nombre || !correo){ $("#envOk").innerHTML=`<div class="ok" style="background:#fdecec;border-color:#dc2626;color:#7a1c1c">Completa nombre y correo de prueba.</div>`; return; }
+  const arr=leer(); const folio="SOL-"+String(arr.length+1).padStart(4,"0");
+  arr.push({ folio, nombre, correo, ...ultimaSim, estatus:"En revisión", fecha:new Date().toLocaleString("es-MX") });
+  guardar(arr);
+  $("#envOk").innerHTML=`<div class="ok"><b>✅ Solicitud ${esc(folio)} registrada</b>Estado: <strong>En revisión</strong>. En esta demostración, el administrador la revisará desde su panel y cambiará el estado. No se envía ningún correo ni se comparte la información.</div>`;
+  $("#btnEnviar").disabled=true;
+}
+
+// ================== Portal del administrador ==================
+function vistaAdmin(){
+  if(!adminEntro){ vistaLogin(); return; }
+  const arr=leer(); const n=e=>arr.filter(s=>s.estatus===e).length;
+  $("#vista").innerHTML=`
+    <div class="barra">
+      <div><h1 style="margin:0">Panel del administrador</h1><p class="sub" style="margin:2px 0 0">Solicitudes recibidas en esta demostración.</p></div>
+      <div class="acciones"><button class="btnp sec mini" id="salir">Cerrar sesión</button><button class="btnp sec mini" id="limpiar">Borrar todo</button></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${arr.length}</b>Total</div><div class="stat"><b>${n("En revisión")}</b>En revisión</div>
+      <div class="stat"><b>${n("Aprobada")}</b>Aprobadas</div><div class="stat"><b>${n("Rechazada")}</b>Rechazadas</div>
+    </div>
+    <div class="card" style="margin-top:16px; overflow:auto">
+      ${arr.length===0?`<p class="vacio">Aún no hay solicitudes. Ve a "Simular", haz una simulación y envíala.</p>`:`
+      <table><thead><tr><th>Folio</th><th>Solicitante</th><th>Contacto</th><th>Crédito</th><th>Pago mensual</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody>${arr.map((s,i)=>`
+        <tr>
+          <td>${esc(s.folio)}<br><span style="color:var(--suave);font-size:.78rem">${esc(s.fecha)}</span></td>
+          <td>${esc(s.nombre)}</td><td>${esc(s.correo)}</td>
+          <td>${dinero(s.monto)}<br><span style="color:var(--suave);font-size:.78rem">${esc(s.tipo)} · ${s.plazo} años</span></td>
+          <td>${dinero2(s.mensual)}</td>
+          <td><span class="pill ${pillClase(s.estatus)}">${esc(s.estatus)}</span></td>
+          <td class="acciones"><button class="btnp mini" data-apr="${i}">Aprobar</button><button class="btnp sec mini" data-rec="${i}">Rechazar</button></td>
+        </tr>`).join("")}</tbody></table>`}
+    </div>`;
+  $("#salir").onclick=()=>{ adminEntro=false; vistaAdmin(); };
+  $("#limpiar").onclick=()=>{ if(confirm("¿Borrar todas las solicitudes de la demo?")){ guardar([]); vistaAdmin(); } };
+  $$("[data-apr]").forEach(b=>b.onclick=()=>cambiar(+b.dataset.apr,"Aprobada"));
+  $$("[data-rec]").forEach(b=>b.onclick=()=>cambiar(+b.dataset.rec,"Rechazada"));
+}
+function cambiar(i,e){ const a=leer(); if(a[i]){ a[i].estatus=e; guardar(a); } vistaAdmin(); }
+
+function vistaLogin(){
+  $("#vista").innerHTML=`
+    <h1>Acceso de administrador</h1><p class="sub">Inicia sesión para ver las solicitudes de la demostración.</p>
+    <div class="card login"><form id="flogin">
+      <div class="campoL"><label>Usuario</label><input id="l_user" autocomplete="off" placeholder="admin"></div>
+      <div class="campoL"><label>Contraseña</label><input id="l_pass" type="password" placeholder="••••••"></div>
+      <button class="btnp" type="submit">Entrar</button>
+      <div id="lerr" style="color:var(--rojo);margin-top:10px;font-size:.9rem"></div>
+      <div class="cred">🔑 Credenciales de demostración — Usuario: <b>admin</b> · Contraseña: <b>demo1234</b></div>
+    </form></div>`;
+  $("#flogin").addEventListener("submit",e=>{ e.preventDefault();
+    if($("#l_user").value.trim()===ADMIN_USER && $("#l_pass").value===ADMIN_PASS){ adminEntro=true; vistaAdmin(); }
+    else $("#lerr").textContent="Usuario o contraseña incorrectos."; });
+}
+
+function render(){
+  const ruta=location.hash==="#admin"?"admin":"solicitud";
+  $("#nav-sol").classList.toggle("activo",ruta==="solicitud");
+  $("#nav-adm").classList.toggle("activo",ruta==="admin");
+  ruta==="admin"?vistaAdmin():vistaSolicitud();
+}
+window.addEventListener("hashchange",render);
+render();
+</script>
+</body>
+</html>
